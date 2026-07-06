@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>暑期特教輔導：快樂認識雲朵</title>
+    <style>
+        :root {
+            --bg-color: #FFF5F5;      /* 溫柔粉白 */
+            --macaron-pink: #FFD1DC;  /* 馬卡龍粉 */
+            --macaron-blue: #C3E6FC;  /* 馬卡龍藍 */
+            --macaron-green: #C8E6C9; /* 馬卡龍綠 */
+            --macaron-yellow: #FFF9C4;/* 馬卡龍黃 */
+            --macaron-purple: #E1BEE7;/* 馬卡龍紫 */
+            --text-color: #5D4037;    /* 深可可色 */
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: #6A1B9A;
+            text-shadow: 2px 2px #FFF;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 1.4rem;
+            margin-bottom: 25px;
+            background-color: #FFF;
+            padding: 10px 25px;
+            border-radius: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            font-weight: bold;
+            border: 2px dashed var(--macaron-pink);
+        }
+
+        .game-container {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            max-width: 1100px;
+            gap: 30px;
+        }
+
+        .column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .card {
+            background-color: white;
+            border: 4px solid transparent;
+            border-radius: 20px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            box-shadow: 0 6px 10px rgba(0,0,0,0.08);
+            transition: all 0.2s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .name-card {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background-color: var(--macaron-blue);
+            min-height: 80px;
+        }
+
+        .image-card {
+            background-color: var(--macaron-pink);
+            flex-direction: column;
+            min-height: 180px;
+            padding: 10px;
+        }
+
+        .image-card img {
+            width: 100%;
+            max-width: 240px;
+            height: 140px;
+            object-fit: cover;
+            border-radius: 15px;
+            border: 3px solid #FFF;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .image-hint {
+            font-size: 1.1rem;
+            margin-top: 10px;
+            color: #4E342E;
+            font-weight: bold;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 3px 12px;
+            border-radius: 10px;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.12);
+        }
+
+        .card.selected {
+            border-color: #673AB7;
+            background-color: var(--macaron-yellow) !important;
+            transform: scale(1.03);
+        }
+
+        .card.matched {
+            background-color: var(--macaron-green) !important;
+            border-color: #4CAF50;
+            color: #2E7D32;
+            cursor: default;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.7;
+        }
+
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+            100% { transform: translateX(0); }
+        }
+
+        .shake {
+            animation: shake 0.4s ease-in-out;
+            border-color: #FF5252 !important;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.4);
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .modal-content {
+            background-color: #FFF;
+            padding: 40px;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border: 8px solid var(--macaron-purple);
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            font-size: 2.5rem;
+            color: #E91E63;
+            margin-top: 0;
+        }
+
+        .modal-btn {
+            background-color: var(--macaron-blue);
+            border: none;
+            padding: 12px 35px;
+            font-size: 1.3rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-top: 15px;
+        }
+
+        .admin-toggle-btn {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            background-color: #5c6bc0;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            z-index: 20;
+        }
+        .admin-grid {
+            display: grid;
+            grid-template-columns: 80px 150px 300px;
+            gap: 10px;
+            align-items: center;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .admin-grid input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>☁️ 快樂認識雲朵 ☁️</h1>
+    <div class="subtitle">👉 請先點一個【左邊名稱】，再點選【右邊正確的圖片】吧！</div>
+
+    <div class="game-container">
+        <div class="column" id="names-column"></div>
+        <div class="column" id="images-column"></div>
+    </div>
+
+    <div class="modal" id="success-modal">
+        <div class="modal-content">
+            <h2>🎉 太棒了！ 🎉</h2>
+            <p style="font-size: 1.8rem; font-weight: bold;">你認識了所有的雲朵！</p>
+            <p style="font-size: 1.4rem; color: #7b1fa2;">你是最棒的雲朵小達人 ⛅</p>
+            <button class="modal-btn" onclick="resetGame()">再玩一次</button>
+        </div>
+    </div>
+
+    <button class="admin-toggle-btn" onclick="openAdminModal()">⚙️ 老師編輯模式</button>
+    <div class="modal" id="admin-modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <h2>⚙️ 教材內容編輯器</h2>
+            <p style="color: #666; margin-bottom: 20px;">老師可以在這裡直接修改內容，圖片可填入網路網址或本機圖片檔名。</p>
+            
+            <div class="admin-grid" id="admin-inputs-container">
+                </div>
+
+            <button class="modal-btn" style="background-color: var(--macaron-green);" onclick="saveAdminData()">💾 儲存並重新整理</button>
+            <button class="modal-btn" style="background-color: #ddd; margin-left: 10px;" onclick="closeAdminModal()">取消</button>
+        </div>
+    </div>
+
+    <script>
+        // 已經完全替換為老師提供的雲朵圖片網址
+        const defaultCloudData = [
+            { id: 'cumulus', name: '積雲', hint: '☁️ 像一朵朵大棉花糖', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRh1LffTloMxhrKZV-uIkJP--9KehBR0xsHSTywM5__Jg&s=10' },
+            { id: 'cirrus', name: '卷雲', hint: '🪶 高空上的輕柔羽毛', image: 'https://upload.wikimedia.org/wikipedia/commons/9/90/Cirrusclouds-Georgia-Oct1st.jpg' },
+            { id: 'altocumulus', name: '高積雲', hint: '🐑 像一團團的小綿羊毛', image: 'https://upload.wikimedia.org/wikipedia/commons/4/4f/Altocumulus1.jpg' },
+            { id: 'cirrocumulus', name: '卷積雲', hint: '🐟 密密麻麻的魚鱗波紋', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR47w9S7SAIR3bOQgzNVtHVpl1raYQQ8ILG4rL_3pS-RXziISFsLzWZ7fx4&s=10' },
+            { id: 'stratus', name: '層雲', hint: '🌫️ 像一層大霧把天遮住', image: 'https://www.zztaitung.com/wp-content/uploads/2019/09/%E3%80%90365%E6%97%A5%E3%80%91No344-1_%E5%8F%B0%E6%9D%B1%E5%A4%A9%E6%B0%A3_%E9%9B%B2_%E7%A9%8D%E9%9B%B2_%E5%8D%B7%E7%A9%8D%E9%9B%B2_%E5%B1%A4%E9%9B%B2_%E5%8D%B7%E5%B1%A4%E9%9B%B2_%E9%9B%A8%E5%B1%A4%E9%9B%B2-740x450.jpg' },
+            { id: 'nimbostratus', name: '雨層雲', hint: '🌧️ 暗暗的烏雲，快下雨了', image: 'https://i2.kknews.cc/o1Hu75t2WD_RtJUwGpfhL33uXRvFKsMP5qvUS10/0.jpg' }
+        ];
+
+        let cloudData = [];
+        let selectedNameCard = null;
+        let selectedImageCard = null;
+        let matchedCount = 0;
+        let audioCtx = null;
+
+        function loadGameData() {
+            const savedData = localStorage.getItem('teacher_cloud_game_data');
+            if (savedData) {
+                cloudData = JSON.parse(savedData);
+            } else {
+                cloudData = JSON.parse(JSON.stringify(defaultCloudData));
+            }
+        }
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            initAudio();
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'success') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'error') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+            }
+        }
+
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function initGame() {
+            loadGameData();
+            const namesColumn = document.getElementById('names-column');
+            const imagesColumn = document.getElementById('images-column');
+            namesColumn.innerHTML = '';
+            imagesColumn.innerHTML = '';
+            matchedCount = 0;
+            selectedNameCard = null;
+            selectedImageCard = null;
+
+            const shuffledNames = shuffle([...cloudData]);
+            const shuffledImages = shuffle([...cloudData]);
+
+            shuffledNames.forEach(cloud => {
+                const card = document.createElement('div');
+                card.className = 'card name-card';
+                card.innerText = cloud.name;
+                card.dataset.id = cloud.id;
+                card.addEventListener('click', handleNameClick);
+                namesColumn.appendChild(card);
+            });
+
+            shuffledImages.forEach(cloud => {
+                const card = document.createElement('div');
+                card.className = 'card image-card';
+                card.dataset.id = cloud.id;
+
+                const img = document.createElement('img');
+                img.src = cloud.image;
+                img.alt = cloud.name;
+
+                const hint = document.createElement('div');
+                hint.className = 'image-hint';
+                hint.innerText = cloud.hint;
+
+                card.appendChild(img);
+                card.appendChild(hint);
+                card.addEventListener('click', handleImageClick);
+                imagesColumn.appendChild(card);
+            });
+        }
+
+        function handleNameClick(e) {
+            initAudio();
+            const card = e.currentTarget;
+            if (card.classList.contains('matched')) return;
+            if (selectedNameCard) selectedNameCard.classList.remove('selected');
+            selectedNameCard = card;
+            selectedNameCard.classList.add('selected');
+            checkMatch();
+        }
+
+        function handleImageClick(e) {
+            initAudio();
+            const card = e.currentTarget;
+            if (card.classList.contains('matched')) return;
+            if (!selectedNameCard) {
+                playSound('error');
+                card.classList.add('shake');
+                setTimeout(() => card.classList.remove('shake'), 400);
+                return;
+            }
+            if (selectedImageCard) selectedImageCard.classList.remove('selected');
+            selectedImageCard = card;
+            selectedImageCard.classList.add('selected');
+            checkMatch();
+        }
+
+        function checkMatch() {
+            if (selectedNameCard && selectedImageCard) {
+                if (selectedNameCard.dataset.id === selectedImageCard.dataset.id) {
+                    playSound('success');
+                    selectedNameCard.className = 'card name-card matched';
+                    selectedImageCard.className = 'card image-card matched';
+                    selectedNameCard = null; selectedImageCard = null;
+                    matchedCount++;
+                    if (matchedCount === cloudData.length) {
+                        setTimeout(() => { document.getElementById('success-modal').style.display = 'flex'; }, 400);
+                    }
+                } else {
+                    playSound('error');
+                    const n = selectedNameCard; const i = selectedImageCard;
+                    n.classList.add('shake'); i.classList.add('shake');
+                    n.classList.remove('selected'); i.classList.remove('selected');
+                    selectedNameCard = null; selectedImageCard = null;
+                    setTimeout(() => { n.classList.remove('shake'); i.classList.remove('shake'); }, 400);
+                }
+            }
+        }
+
+        function resetGame() {
+            document.getElementById('success-modal').style.display = 'none';
+            initGame();
+        }
+
+        function openAdminModal() {
+            loadGameData();
+            const container = document.getElementById('admin-inputs-container');
+            container.innerHTML = `
+                <div style="font-weight:bold;">雲朵</div>
+                <div style="font-weight:bold;">口語提示文字</div>
+                <div style="font-weight:bold;">圖片網址 / 檔名</div>
+            `;
+            
+            cloudData.forEach((cloud, index) => {
+                container.innerHTML += `
+                    <div><strong>${cloud.name}</strong><input type="hidden" id="admin-name-${index}" value="${cloud.name}"></div>
+                    <div><input type="text" id="admin-hint-${index}" value="${cloud.hint}"></div>
+                    <div><input type="text" id="admin-image-${index}" value="${cloud.image}"></div>
+                `;
+            });
+            document.getElementById('admin-modal').style.display = 'flex';
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-modal').style.display = 'none';
+        }
+
+        function saveAdminData() {
+            const newData = cloudData.map((cloud, index) => {
+                return {
+                    id: cloud.id,
+                    name: document.getElementById(`admin-name-${index}`).value,
+                    hint: document.getElementById(`admin-hint-${index}`).value,
+                    image: document.getElementById(`admin-image-${index}`).value
+                };
+            });
+            localStorage.setItem('teacher_cloud_game_data', JSON.stringify(newData));
+            closeAdminModal();
+            initGame();
+        }
+
+        window.onload = initGame;
+    </script>
+</body>
+</html>
