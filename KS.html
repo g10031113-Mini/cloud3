@@ -36,13 +36,83 @@
 
         .subtitle {
             font-size: 1.4rem;
-            margin-bottom: 25px;
+            margin-bottom: 15px;
             background-color: #FFF;
             padding: 10px 25px;
             border-radius: 30px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             font-weight: bold;
             border: 2px dashed var(--macaron-pink);
+        }
+
+        /* 頂部資訊區（包含計時與排行榜） */
+        .dashboard {
+            display: flex;
+            gap: 20px;
+            align-items: stretch;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .timer-container {
+            flex: 1;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #E65100;
+            background-color: var(--macaron-yellow);
+            padding: 15px;
+            border-radius: 20px;
+            border: 3px solid #FFB74D;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 🏆 排行榜樣式 */
+        .leaderboard-container {
+            flex: 2;
+            background-color: #FFF;
+            border: 3px solid var(--macaron-purple);
+            border-radius: 20px;
+            padding: 10px 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .leaderboard-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #4A148C;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .leaderboard-list {
+            display: flex;
+            gap: 15px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .leaderboard-item {
+            flex: 1;
+            background-color: #F3E5F5;
+            padding: 5px 10px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            text-align: center;
+            border: 1px solid #E1BEE7;
+        }
+
+        .leaderboard-item.rank-1 {
+            background-color: #FFF9C4;
+            border-color: #FFF59D;
+            color: #F57F17;
         }
 
         .game-container {
@@ -212,12 +282,34 @@
             width: 100%;
             box-sizing: border-box;
         }
+        .clear-btn {
+            background: none;
+            border: none;
+            color: #c62828;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
 
     <h1>☁️ 快樂認識雲朵 ☁️</h1>
     <div class="subtitle">👉 請先點一個【左邊名稱】，再點選【右邊正確的圖片】吧！</div>
+    
+    <div class="dashboard">
+        <div class="timer-container">⏱️ 遊戲時間：<span id="timer-display">0</span> 秒</div>
+        
+        <div class="leaderboard-container">
+            <div class="leaderboard-title">
+                <span>🏆 雲朵小達人排行榜 (前三名)</span>
+                <button class="clear-btn" onclick="clearRecords()">清除紀錄</button>
+            </div>
+            <ul class="leaderboard-list" id="leaderboard-display">
+                <li class="leaderboard-item">暫無紀錄</li>
+            </ul>
+        </div>
+    </div>
 
     <div class="game-container">
         <div class="column" id="names-column"></div>
@@ -226,9 +318,10 @@
 
     <div class="modal" id="success-modal">
         <div class="modal-content">
-            <h2>🎉 太棒了！ 🎉</h2>
+            <h2 id="win-title">🎉 太棒了！ 🎉</h2>
             <p style="font-size: 1.8rem; font-weight: bold;">你認識了所有的雲朵！</p>
-            <p style="font-size: 1.4rem; color: #7b1fa2;">你是最棒的雲朵小達人 ⛅</p>
+            <p style="font-size: 1.5rem; color: #E65100; font-weight: bold;">⏱️ 這次總共花了 <span id="final-time">0</span> 秒喔！</p>
+            <p id="new-record-msg" style="font-size: 1.6rem; color: #E91E63; font-weight: bold; display: none;">👑 哇！你打破了最強的歷史紀錄！！！ 👑</p>
             <button class="modal-btn" onclick="resetGame()">再玩一次</button>
         </div>
     </div>
@@ -248,14 +341,13 @@
     </div>
 
     <script>
-        // 已經完全替換為老師提供的雲朵圖片網址
         const defaultCloudData = [
             { id: 'cumulus', name: '積雲', hint: '☁️ 像一朵朵大棉花糖', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRh1LffTloMxhrKZV-uIkJP--9KehBR0xsHSTywM5__Jg&s=10' },
             { id: 'cirrus', name: '卷雲', hint: '🪶 高空上的輕柔羽毛', image: 'https://upload.wikimedia.org/wikipedia/commons/9/90/Cirrusclouds-Georgia-Oct1st.jpg' },
             { id: 'altocumulus', name: '高積雲', hint: '🐑 像一團團的小綿羊毛', image: 'https://upload.wikimedia.org/wikipedia/commons/4/4f/Altocumulus1.jpg' },
             { id: 'cirrocumulus', name: '卷積雲', hint: '🐟 密密麻麻的魚鱗波紋', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR47w9S7SAIR3bOQgzNVtHVpl1raYQQ8ILG4rL_3pS-RXziISFsLzWZ7fx4&s=10' },
             { id: 'stratus', name: '層雲', hint: '🌫️ 像一層大霧把天遮住', image: 'https://www.zztaitung.com/wp-content/uploads/2019/09/%E3%80%90365%E6%97%A5%E3%80%91No344-1_%E5%8F%B0%E6%9D%B1%E5%A4%A9%E6%B0%A3_%E9%9B%B2_%E7%A9%8D%E9%9B%B2_%E5%8D%B7%E7%A9%8D%E9%9B%B2_%E5%B1%A4%E9%9B%B2_%E5%8D%B7%E5%B1%A4%E9%9B%B2_%E9%9B%A8%E5%B1%A4%E9%9B%B2-740x450.jpg' },
-            { id: 'nimbostratus', name: '雨層雲', hint: '🌧️ 暗暗的烏雲，快下雨了', image: 'https://upload.wikimedia.org/wikipedia/commons/4/4f/Ns1.jpg' }
+            { id: 'nimbostratus', name: '雨層雲', hint: '🌧️ 暗暗的烏雲，快下雨了', image: 'https://i2.kknews.cc/o1Hu75t2WD_RtJUwGpfhL33uXRvFKsMP5qvUS10/0.jpg' }
         ];
 
         let cloudData = [];
@@ -264,6 +356,11 @@
         let matchedCount = 0;
         let audioCtx = null;
 
+        // 計時器與排行變數
+        let seconds = 0;
+        let timerInterval = null;
+        let records = [];
+
         function loadGameData() {
             const savedData = localStorage.getItem('teacher_cloud_game_data');
             if (savedData) {
@@ -271,6 +368,15 @@
             } else {
                 cloudData = JSON.parse(JSON.stringify(defaultCloudData));
             }
+
+            // 載入歷史排行紀錄
+            const savedRecords = localStorage.getItem('cloud_game_records');
+            if (savedRecords) {
+                records = JSON.parse(savedRecords);
+            } else {
+                records = [];
+            }
+            updateLeaderboardDisplay();
         }
 
         function initAudio() {
@@ -307,6 +413,49 @@
             return array.sort(() => Math.random() - 0.5);
         }
 
+        function startTimer() {
+            clearInterval(timerInterval);
+            seconds = 0;
+            document.getElementById('timer-display').innerText = seconds;
+            timerInterval = setInterval(() => {
+                seconds++;
+                document.getElementById('timer-display').innerText = seconds;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+        }
+
+        // 更新網頁上的排行榜顯示
+        function updateLeaderboardDisplay() {
+            const display = document.getElementById('leaderboard-display');
+            display.innerHTML = '';
+            
+            if (records.length === 0) {
+                display.innerHTML = '<li class="leaderboard-item">🏆 期待第一個挑戰者！</li>';
+                return;
+            }
+
+            // 只秀前三名
+            records.slice(0, 3).forEach((rec, idx) => {
+                const li = document.createElement('li');
+                li.className = `leaderboard-item rank-${idx+1}`;
+                let medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : '🥉');
+                li.innerText = `${medal} ${rec.name}：${rec.time}秒`;
+                display.appendChild(li);
+            });
+        }
+
+        // 清除紀錄（老師專用）
+        function clearRecords() {
+            if(confirm("確定要清除所有學生的排行榜紀錄嗎？")) {
+                records = [];
+                localStorage.removeItem('cloud_game_records');
+                updateLeaderboardDisplay();
+            }
+        }
+
         function initGame() {
             loadGameData();
             const namesColumn = document.getElementById('names-column');
@@ -316,6 +465,11 @@
             matchedCount = 0;
             selectedNameCard = null;
             selectedImageCard = null;
+
+            document.getElementById('new-record-msg').style.display = 'none';
+            document.getElementById('win-title').innerText = '🎉 太棒了！ 🎉';
+
+            startTimer();
 
             const shuffledNames = shuffle([...cloudData]);
             const shuffledImages = shuffle([...cloudData]);
@@ -383,8 +537,38 @@
                     selectedImageCard.className = 'card image-card matched';
                     selectedNameCard = null; selectedImageCard = null;
                     matchedCount++;
+                    
                     if (matchedCount === cloudData.length) {
-                        setTimeout(() => { document.getElementById('success-modal').style.display = 'flex'; }, 400);
+                        stopTimer();
+                        document.getElementById('final-time').innerText = seconds;
+                        
+                        // 延遲跳出詢問框，讓綠色配對完畫面稍微停頓
+                        setTimeout(() => {
+                            let studentName = prompt("👑 全對了！請輸入你的名字來記錄成績：", "小寶貝");
+                            if (!studentName) studentName = "神祕小達人";
+
+                            // 檢查是否打破歷史第一名紀錄
+                            let isNewFirst = false;
+                            if (records.length === 0 || seconds < records[0].time) {
+                                isNewFirst = true;
+                            }
+
+                            // 記錄本次成績
+                            records.push({ name: studentName, time: seconds });
+                            // 排序（時間少/速度快的排前面）
+                            records.sort((a, b) => a.time - b.time);
+                            // 存入瀏覽器
+                            localStorage.setItem('cloud_game_records', JSON.stringify(records));
+                            updateLeaderboardDisplay();
+
+                            // 秀出特殊驚喜文字
+                            if (isNewFirst) {
+                                document.getElementById('win-title').innerText = '👑 終極破紀錄！ 👑';
+                                document.getElementById('new-record-msg').style.display = 'block';
+                            }
+
+                            document.getElementById('success-modal').style.display = 'flex';
+                        }, 500);
                     }
                 } else {
                     playSound('error');
